@@ -33,6 +33,35 @@
 ここでは、ContainerFile を作成し、カスタマイズされたコンテナイメージを作成する方法を体験します。
 
 ### ContainerFIle ( Dockerfile ) の作成
+lampスタックを前提とした簡単なコンテナを作成します。
+※lampスタックを例としていますが、アプリケーションの処理はダミー実装となっていて、RDBMSへのアクセスは行っていない点、了承ください。
+
+#### 前準備（コンテナにコピーするファイルの用意）
+以下のコマンドを実行し、index.html とsupervisord.confを用意します。それぞれのファイルは、後で実行するcontainerfileの作成や、podman build と同じ作業ディレクトリに配置してください。
+
+index.htmlの作成
+```
+cat <<EOF>>index.html
+<h1 style="text-align:center;">Welcome to RHEL image mode</h1> <?php phpinfo(); ?>
+EOF
+```
+
+supervisordの作成
+```
+cat <<EOF>>supervisord.conf
+[program:httpd]
+command=/usr/sbin/httpd -D FOREGROUND
+
+[program:php-fpm]
+command=/usr/sbin/php-fpm --nodaemonize
+
+[program:mariadb]
+command=/usr/bin/mysqld_safe
+
+EOF
+```
+
+#### containerfile作成
 以下のコマンドを実行し、containerfileを作成します。
 ここでは、cat コマンドをヒアドキュメントでリダイレクトする方法を示していますが、直接エディタでcontainerfile を新規作成する方法でも問題ありません。
 
@@ -46,13 +75,22 @@ FROM registry.access.redhat.com/ubi9/ubi
 
 ## RUN命令により、取得したベースイメージ上で、dnfコマンドを実行する。
 ## httpd , mariadb , mariadb-server , php-fpm , php-mysqlnd をインストール
-RUN dnf module enable -y php:8.2 nginx:1.22 && dnf install -y httpd mariadb mariadb-server php-fpm php-mysqlnd && dnf clean all
+# RUN dnf module enable -y php:8.2 nginx:1.22 && dnf install -y httpd mariadb mariadb-server php-fpm php-mysqlnd && dnf clean all
+RUN dnf module enable -y php:8.2 nginx:1.22
+RUN dnf install -y supervisor httpd mariadb mariadb-server php-fpm php-mysqlnd && \
+    dnf clean all
+
         
 ## コンテナ起動時に、httpd , mariadb , php-fpm が自動起動するように、systemd の起動定義を"enable"に設定
-RUN systemctl enable httpd mariadb php-fpm
+## RUN systemctl enable httpd mariadb php-fpm
         
 ## htmlコンテンツの作成と配置
-RUN echo '<h1 style="text-align:center;">Welcome to RHEL image mode</h1> <?php phpinfo(); ?>' > /var/www/html/index.html
+## RUN echo '<h1 style="text-align:center;">Welcome to RHEL image mode</h1> <?php phpinfo(); ?>' > /var/www/html/index.html
+
+COPY index.html /var/www/html/index.html
+COPY supervisord.conf /etc/supervisord.conf
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
 EOF
 ```
