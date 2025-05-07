@@ -85,8 +85,8 @@ FROM registry.access.redhat.com/ubi9/ubi
 
 ## RUN命令により、取得したベースイメージ上で、dnfコマンドを実行する。
 ## supervisor , httpd , mariadb , mariadb-server , php-fpm , php-mysqlnd をインストール
-
-
+## マルチプロセスのコンテナのため、supervisor で起動を制御（互換性を考慮し、systemd は避ける）
+## supservisor は、ubi9 のリポジトリには無いため、epelを手動でインストールする。
 RUN dnf module enable -y php:8.2 nginx:1.22
 RUN curl -O https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && \
     rpm -ivh epel-release-latest-9.noarch.rpm && \
@@ -102,6 +102,7 @@ RUN mkdir -p /run/php-fpm
 COPY index.html /var/www/html/index.html
 COPY supervisord.conf /etc/supervisord.conf
 
+## 複数プロセスを起動。
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
 
 EOF
