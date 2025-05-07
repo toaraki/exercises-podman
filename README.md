@@ -49,14 +49,24 @@ EOF
 supervisordの作成
 ```
 cat <<EOF>>supervisord.conf
+[supervisord]
+nodaemon=true
+logfile=/var/log/supervisord.log
+pidfile=/tmp/supervisord.pid
+
 [program:httpd]
 command=/usr/sbin/httpd -D FOREGROUND
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/httpd.log
+stderr_logfile=/var/log/httpd.err
 
 [program:php-fpm]
 command=/usr/sbin/php-fpm --nodaemonize
-
-[program:mariadb]
-command=/usr/bin/mysqld_safe
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/php-fpm.log
+stderr_logfile=/var/log/php-fpm.err
 
 EOF
 ```
@@ -74,19 +84,21 @@ cat <<EOF >>containerfile
 FROM registry.access.redhat.com/ubi9/ubi
 
 ## RUN命令により、取得したベースイメージ上で、dnfコマンドを実行する。
-## httpd , mariadb , mariadb-server , php-fpm , php-mysqlnd をインストール
-# RUN dnf module enable -y php:8.2 nginx:1.22 && dnf install -y httpd mariadb mariadb-server php-fpm php-mysqlnd && dnf clean all
+## supervisor , httpd , mariadb , mariadb-server , php-fpm , php-mysqlnd をインストール
+
+
 RUN dnf module enable -y php:8.2 nginx:1.22
-RUN dnf install -y supervisor httpd mariadb mariadb-server php-fpm php-mysqlnd && \
+RUN curl -O https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && \
+    rpm -ivh epel-release-latest-9.noarch.rpm && \
+    dnf install -y supervisor httpd mariadb mariadb-server php-fpm php-mysqlnd && \
     dnf clean all
 
         
-## コンテナ起動時に、httpd , mariadb , php-fpm が自動起動するように、systemd の起動定義を"enable"に設定
-## RUN systemctl enable httpd mariadb php-fpm
-        
-## htmlコンテンツの作成と配置
-## RUN echo '<h1 style="text-align:center;">Welcome to RHEL image mode</h1> <?php phpinfo(); ?>' > /var/www/html/index.html
 
+# Containerfile にこの1行を追加
+RUN mkdir -p /run/php-fpm
+
+## 各種ファイルの配置
 COPY index.html /var/www/html/index.html
 COPY supervisord.conf /etc/supervisord.conf
 
