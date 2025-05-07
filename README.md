@@ -126,7 +126,7 @@ $ podman build -f containerfile -t quay.io/[my_account]/lamp-ubi9:latest
 コンテナの起動は以下のコマンドで行います。コマンド実行時は、"quay.io/[my_account]/lamp-ubi9:latest"のmy_accountを、**前のステップで指定した、quay.io のユーザアカウント名 に変更したうえで** 実行してください。
 
 ```
-$ podman run -d --name lamp -p 8080:80 quay.io/[my_account]/lamp-ubi9:latest /sbin/init
+$ podman run -d --name lamp -p 8080:80 quay.io/[my_account]/lamp-ubi9:latest
 ```
 
 #### 起動時に指定したオプションの説明
