@@ -60,7 +60,7 @@ EOF
 ### コンテナのビルド (build)
 
 podman build コマンドを実行しコンテナをビルドします。前のステップで作成したcontainerファイルを"-f"オプションで指定することで、containerfile に指定した、lampスタックの構築処理を実行することができます。
-また、作成されたコンテナイメージにタグ情報を付与するため、"-t"オプションを使用します(※)。コマンド実行時は、"quay.io/[my_account]/lamp-ubi9:latest"のmy_accountを、** quay.io のユーザアカウント名 に変更したうえで ** 実行してください。
+また、作成されたコンテナイメージにタグ情報を付与するため、"-t"オプションを使用します(※)。コマンド実行時は、"quay.io/[my_account]/lamp-ubi9:latest"のmy_accountを、**quay.io のユーザアカウント名 に変更したうえで** 実行してください。
 
 ※ 最終的に、quay.io (パブリックスペースのコンテナイメージレジストリサービス)に、コンテナイメージをアップロードすることを想定し、"quay.io/[my_account]/lamp-ubi9:latest" を付与しています。
 
@@ -70,7 +70,7 @@ $ podman build -f containerfile -t quay.io/[my_account]/lamp-ubi9:latest
 
 ### コンテナの実行 (run)
 
-作成したコンテナを起動します。コンテナの起動は以下のコマンドで行います。コマンド実行時は、"quay.io/[my_account]/lamp-ubi9:latest"のmy_accountを、** 前のステップで指定した、quay.io のユーザアカウント名 に変更したうえで ** 実行してください。
+作成したコンテナを起動します。コンテナの起動は以下のコマンドで行います。コマンド実行時は、"quay.io/[my_account]/lamp-ubi9:latest"のmy_accountを、**前のステップで指定した、quay.io のユーザアカウント名 に変更したうえで** 実行してください。
 
 ```
 $ podman run -d --name lamp -p 8080:80 quay.io/[my_account]/lamp-ubi9:latest /sbin/init
@@ -128,11 +128,9 @@ $ podman start コンテナ名(または、CONTAINER ID)
 $ podman rm コンテナ名(または、CONTAINER ID)
 ```
 
-コンテナの停止
-![alt text](image-7.png)
+実行例
 
-コンテナの削除
-
+![alt text](image-9.png)
 ### コンテナイメージのアップロード
 
 ビルドしたコンテナが期待通り稼働することが確認できた（ここでは、という仮定をおいてます。）ので、イメージレジストリへアップロードします。
@@ -162,5 +160,7 @@ $ podman image rm [IMAGE ID]
 ```
 
 実行例
+![alt text](image-10.png)
 
 
+以上で、contianerファイルを用いた、コンテナのbuild / run / stop / start / rm の演習を終了します。
